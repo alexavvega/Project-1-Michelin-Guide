@@ -4,17 +4,17 @@ import { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// 1. 등급별 커스텀 마커 생성 함수 (isGreen 반영 확인!)
+
 const createCustomIcon = (stars, isGreen) => {
     let color = "#3498db"; // 기본: Selected (Blue)
     let scale = 1;
 
-    // ☘️ 그린스타가 있으면 무조건 초록색으로 표시
+    
     if (isGreen) {
         color = "#2E7D32"; // Michelin Green
         scale = 1.1;
     } else {
-        // 그린스타가 없을 때만 별점 색상 적용
+        
         if (stars.includes("⭐⭐⭐")) {
             color = "#E60000"; 
             scale = 1.35;
@@ -57,7 +57,7 @@ function ChangeView({ center }) {
 }
 
 function MapDisplay({ restaurants, center }) {
-    // [보정 로직들]
+    
     const getStarDisplay = (item) => {
         const awardKey = Object.keys(item).find(k => k.trim().toLowerCase().includes('award') || k.trim().toLowerCase().includes('star'));
         const rawValue = item[awardKey] ? String(item[awardKey]).toLowerCase() : "";
@@ -70,7 +70,7 @@ function MapDisplay({ restaurants, center }) {
 
     const hasGreenStar = (item) => {
         const greenKey = Object.keys(item).find(k => k.trim().toLowerCase().includes('green'));
-        // 데이터 값이 "1", 1, 혹은 "yes" 등인 경우 확인
+        
         const val = item[greenKey];
         return val === "1" || val === 1 || String(val).toLowerCase() === 'yes';
     };
@@ -147,7 +147,7 @@ function MapDisplay({ restaurants, center }) {
                                 <Marker 
                                     key={`marker-${idx}`} 
                                     position={[lat, lng]} 
-                                    icon={createCustomIcon(stars, isGreen)} // <-- 이 부분에서 isGreen을 다시 확실히 전달!
+                                    icon={createCustomIcon(stars, isGreen)} 
                                 >
                                     <Tooltip direction="top" offset={[0, -20]} opacity={0.9}>
                                         <div style={{ padding: '4px 8px', textAlign: 'center' }}>
