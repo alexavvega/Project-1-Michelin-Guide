@@ -4,30 +4,33 @@ import { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// 1. 등급별 커스텀 마커 생성 함수 (isGreen 반영 확인!)
+
 const createCustomIcon = (stars, isGreen) => {
-    let color = "#3498db"; // 기본: Selected (Blue)
+    let color = "#3498db"; 
     let scale = 1;
 
-    // ☘️ 그린스타가 있으면 무조건 초록색으로 표시
-    if (isGreen) {
-        color = "#2E7D32"; // Michelin Green
+    
+    if (stars.includes("⭐⭐⭐")) {
+        color = "#E60000"; 
+        scale = 1.35;
+    } else if (stars.includes("⭐⭐")) {
+        color = "#FF5722"; 
+        scale = 1.2;
+    } else if (stars.includes("⭐")) {
+        color = "#FFC107"; 
         scale = 1.1;
-    } else {
-        // 그린스타가 없을 때만 별점 색상 적용
-        if (stars.includes("⭐⭐⭐")) {
-            color = "#E60000"; 
-            scale = 1.35;
-        } else if (stars.includes("⭐⭐")) {
-            color = "#FF5722"; 
-            scale = 1.2;
-        } else if (stars.includes("⭐")) {
-            color = "#FFC107"; 
-            scale = 1.1;
-        } else if (stars.includes("Bib")) {
-            color = "#9C27B0"; 
-        }
+    } else if (stars.includes("Bib")) {
+        color = "#9C27B0"; 
     }
+
+    
+    const borderStyle = isGreen 
+        ? "3px solid #2E7D32"  
+        : "2px solid white";   
+
+    const boxShadow = isGreen
+        ? "0 0 10px rgba(46, 125, 50, 0.9), 0 2px 5px rgba(0,0,0,0.4)" // 초록 광채 효과
+        : "0 2px 5px rgba(0,0,0,0.4)";
 
     return L.divIcon({
         className: 'custom-michelin-pin',
@@ -38,8 +41,8 @@ const createCustomIcon = (stars, isGreen) => {
                 height: ${18 * scale}px;
                 border-radius: 50% 50% 50% 0;
                 transform: rotate(-45deg);
-                border: 2px solid white;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+                border: ${borderStyle};
+                box-shadow: ${boxShadow};
             "></div>`,
         iconSize: [25, 25],
         iconAnchor: [12, 25]
@@ -57,7 +60,7 @@ function ChangeView({ center }) {
 }
 
 function MapDisplay({ restaurants, center }) {
-    // [보정 로직들]
+    // [데이터 보정 로직]
     const getStarDisplay = (item) => {
         const awardKey = Object.keys(item).find(k => k.trim().toLowerCase().includes('award') || k.trim().toLowerCase().includes('star'));
         const rawValue = item[awardKey] ? String(item[awardKey]).toLowerCase() : "";
@@ -70,7 +73,6 @@ function MapDisplay({ restaurants, center }) {
 
     const hasGreenStar = (item) => {
         const greenKey = Object.keys(item).find(k => k.trim().toLowerCase().includes('green'));
-        // 데이터 값이 "1", 1, 혹은 "yes" 등인 경우 확인
         const val = item[greenKey];
         return val === "1" || val === 1 || String(val).toLowerCase() === 'yes';
     };
@@ -147,7 +149,7 @@ function MapDisplay({ restaurants, center }) {
                                 <Marker 
                                     key={`marker-${idx}`} 
                                     position={[lat, lng]} 
-                                    icon={createCustomIcon(stars, isGreen)} // <-- 이 부분에서 isGreen을 다시 확실히 전달!
+                                    icon={createCustomIcon(stars, isGreen)}
                                 >
                                     <Tooltip direction="top" offset={[0, -20]} opacity={0.9}>
                                         <div style={{ padding: '4px 8px', textAlign: 'center' }}>
@@ -191,6 +193,7 @@ function MapDisplay({ restaurants, center }) {
                                                 </div>
                                             </div>
 
+                                            
                                             <div style={{ marginTop: '15px', paddingTop: '10px', borderTop: '1px solid #eee', fontSize: '10px', color: '#95a5a6', textAlign: 'right' }}>
                                                 Latitude: {lat.toFixed(6)} / Longitude: {lng.toFixed(6)}
                                             </div>
