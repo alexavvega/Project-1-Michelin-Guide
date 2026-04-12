@@ -84,7 +84,7 @@ function App() {
         {data.length > 0 ? (
           <MapDisplay restaurants={filteredData} center={mapCenter} />
         ) : (
-          <div style={{ padding: '20px' }}>데이터 로딩 중... (CSV 파일을 확인하세요)</div>
+          <div style={{ padding: '20px' }}>loading data... (please check the csv file)</div>
         )}
       </main>
     </div>
