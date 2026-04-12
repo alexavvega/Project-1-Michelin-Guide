@@ -84,15 +84,11 @@ function App() {
         {data.length > 0 ? (
           <MapDisplay restaurants={filteredData} center={mapCenter} />
         ) : (
-<<<<<<< HEAD
-          <div style={{ padding: '20px' }}>data loading... (Check your scv file)</div>
-=======
-          <div style={{ padding: '20px' }}>loading data... (please check the csv file)</div>
->>>>>>> 7e32962ba745db9570c449f1968eb57f99c7a1ed
+          <div style={{ padding: '20px' }}>Loading data... (Please check your CSV file)</div>
         )}
       </main>
     </div>
   );
 }
 
-export default App;
+  export default App;
