@@ -1,121 +1,94 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from 'react'; 
+import Papa from 'papaparse';
+import './App.css';
+import 'leaflet/dist/leaflet.css';
+import MapDisplay from './components/MapDisplay';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [cuisineList, setCuisineList] = useState([]);
+  const [locationList, setLocationList] = useState([]);
+  const [mapCenter, setMapCenter] = useState([25.0330, 121.5654]);
+  const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const [selectedLocation, setSelectedLocation] = useState('All');
+
+  useEffect(() => {
+    fetch('/DATA_MICHELIN_RESTAURANTS.csv')
+      .then(res => res.text())
+      .then(csvText => {
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const cleanData = results.data.map(row => {
+              const newRow = {};
+              Object.keys(row).forEach(key => { newRow[key.trim()] = row[key]; });
+              return newRow;
+            }).filter(item => item.Name || item.name);
+
+            setData(cleanData);
+            setFilteredData(cleanData);
+
+            const sample = cleanData[0] || {};
+            const cKey = Object.keys(sample).find(k => k.toLowerCase() === 'cuisine');
+            const lKey = Object.keys(sample).find(k => k.toLowerCase() === 'location');
+
+            if (cKey) setCuisineList([...new Set(cleanData.map(item => item[cKey]))].filter(Boolean).sort());
+            if (lKey) setLocationList([...new Set(cleanData.map(item => item[lKey]))].filter(Boolean).sort());
+          }
+        });
+      })
+      .catch(err => console.error("Fetch Error:", err));
+  }, []);
+
+  useEffect(() => {
+    let result = data;
+    const sample = data[0] || {};
+    const cKey = Object.keys(sample).find(k => k.toLowerCase() === 'cuisine');
+    const lKey = Object.keys(sample).find(k => k.toLowerCase() === 'location');
+    const latKey = Object.keys(sample).find(k => k.toLowerCase() === 'latitude');
+    const lngKey = Object.keys(sample).find(k => k.toLowerCase() === 'longitude');
+
+    if (selectedLocation !== 'All' && lKey) {
+      result = result.filter(item => item[lKey] === selectedLocation);
+      if (result.length > 0 && latKey && lngKey) {
+        const lat = parseFloat(result[0][latKey]);
+        const lng = parseFloat(result[0][lngKey]);
+        if (!isNaN(lat) && !isNaN(lng)) setMapCenter([lat, lng]);
+      }
+    }
+    if (selectedCuisine !== 'All' && cKey) {
+      result = result.filter(item => item[cKey] === selectedCuisine);
+    }
+    setFilteredData(result);
+  }, [selectedLocation, selectedCuisine, data]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ padding: '20px', borderBottom: '1px solid #ddd', background: 'white' }}>
+        <h2>Michelin Explorer</h2>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
+            <option value="All">All Locations</option>
+            {locationList.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+          </select>
+          <select value={selectedCuisine} onChange={(e) => setSelectedCuisine(e.target.value)}>
+            <option value="All">All Cuisines</option>
+            {cuisineList.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <span>Found: <b>{filteredData.length}</b></span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </header>
+      <main style={{ flex: 1, position: 'relative' }}>
+        {data.length > 0 ? (
+          <MapDisplay restaurants={filteredData} center={mapCenter} />
+        ) : (
+          <div style={{ padding: '20px' }}>데이터 로딩 중... (CSV 파일을 확인하세요)</div>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
