@@ -182,3 +182,32 @@
     border-right-color: var(--border);
   }
 }
+
+/*  moved css */
+
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+  background: white;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+}
+
+.map-container {
+  flex: 1;
+  position: relative;
+}
+
+.loading {
+  padding: 20px;
+}

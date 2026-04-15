@@ -65,30 +65,51 @@ function App() {
   }, [selectedLocation, selectedCuisine, data]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ padding: '20px', borderBottom: '1px solid #ddd', background: 'white' }}>
-        <h2>Michelin Explorer</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
-            <option value="All">All Locations</option>
-            {locationList.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-          </select>
-          <select value={selectedCuisine} onChange={(e) => setSelectedCuisine(e.target.value)}>
-            <option value="All">All Cuisines</option>
-            {cuisineList.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <span>Found: <b>{filteredData.length}</b></span>
+  <div className="app-container">
+    <header className="app-header">
+      <h2>Michelin Explorer</h2>
+
+      <div className="filter-row">
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+        >
+          <option value="All">All Locations</option>
+          {locationList.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedCuisine}
+          onChange={(e) => setSelectedCuisine(e.target.value)}
+        >
+          <option value="All">All Cuisines</option>
+          {cuisineList.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+
+        <span>
+          Found: <b>{filteredData.length}</b>
+        </span>
+      </div>
+    </header>
+
+    <main className="map-container">
+      {data.length > 0 ? (
+        <MapDisplay restaurants={filteredData} center={mapCenter} />
+      ) : (
+        <div className="loading">
+          Loading data... (Please check your CSV file)
         </div>
-      </header>
-      <main style={{ flex: 1, position: 'relative' }}>
-        {data.length > 0 ? (
-          <MapDisplay restaurants={filteredData} center={mapCenter} />
-        ) : (
-          <div style={{ padding: '20px' }}>Loading data... (Please check your CSV file)</div>
-        )}
-      </main>
-    </div>
-  );
-}
+      )}
+    </main>
+  </div>
+);}
 
   export default App;
