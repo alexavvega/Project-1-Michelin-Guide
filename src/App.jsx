@@ -26,6 +26,25 @@ function App() {
     return parts.length > 1 ? parts[parts.length - 1].trim() : String(location || '').trim();
   };
 
+  const getFlagEmoji = (country) => {
+    const flags = {
+      France: '🇫🇷',
+      Germany: '🇩🇪',
+      Japan: '🇯🇵',
+      USA: '🇺🇸',
+      'United States': '🇺🇸',
+      Italy: '🇮🇹',
+      Spain: '🇪🇸',
+      'United Kingdom': '🇬🇧',
+      'China Mainland': '🇨🇳',
+      China: '🇨🇳',
+      Singapore: '🇸🇬',
+      Taiwan: '🇹🇼',
+    };
+
+    return flags[country] || '🌍';
+  };
+
   useEffect(() => {
     fetch('/DATA_MICHELIN_RESTAURANTS.csv')
       .then(res => res.text())
@@ -176,36 +195,36 @@ function App() {
       <strong className="stat-value">{threeStarCount}</strong>
       <span className="stat-subtext">worldwide</span>
     </div>
+  </div>
 
-    <div className="stat-card country-stars-card">
-      <div className="country-stars-header">
-        <span className="stat-label">STARS BY COUNTRY</span>
-        <span className="stat-subtext">Top 10 countries</span>
-      </div>
+  <div className="country-stars-card">
+    <div className="country-stars-header">
+      <span className="stat-label">STARS BY COUNTRY</span>
+      <span className="stat-subtext">Top 10 countries</span>
+    </div>
 
-      <div className="country-stars-list">
-        {countryTopStarTotals.length > 0 ? (
-          countryTopStarTotals.map((item, index) => (
-            <div key={item.country} className="country-star-row">
-              <div className="country-star-row-label">
-                <span>{index + 1}. {item.country}</span>
-                <span>{item.totalStars}</span>
-              </div>
-
-              <div className="country-star-bar">
-                <div
-                  className="country-star-bar-fill"
-                  style={{
-                    width: `${Math.round((item.totalStars / maxCountryStars) * 100)}%`,
-                  }}
-                />
-              </div>
+    <div className="country-stars-list">
+      {countryTopStarTotals.length > 0 ? (
+        countryTopStarTotals.map((item, index) => (
+          <div key={item.country} className="country-star-row">
+            <div className="country-star-row-label">
+              <span>  {getFlagEmoji(item.country)} {index + 1}. {item.country}</span>
+              <span>{item.totalStars}</span>
             </div>
-          ))
-        ) : (
-          <div className="country-star-empty">Calculating country totals...</div>
-        )}
-      </div>
+
+            <div className="country-star-bar">
+              <div
+                className="country-star-bar-fill"
+                style={{
+                  width: `${Math.round((item.totalStars / maxCountryStars) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="country-star-empty">Calculating country totals...</div>
+      )}
     </div>
   </div>
 </section>
