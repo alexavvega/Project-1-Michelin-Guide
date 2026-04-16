@@ -309,6 +309,7 @@
   position: absolute;
   top: 165px;
   right: 0;
+  bottom:0;
   z-index: 1000;
   width: 30vw;
   pointer-events: none;
@@ -359,15 +360,16 @@
 
 /*the only issue that remains unfixed is the card not positioning to the bottom*/
 .country-stars-card {
+  flex-grow: 1;
   width: 100%;
-  padding: 20px 20px 33px;/*extended padding for bottom but not ideal*/
+  padding: 20px;/*extended padding for bottom but not ideal*/
   background: rgba(31, 31, 31, 0.94);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border);
   border-top: none;
   pointer-events: auto;
   box-sizing: border-box;
-  max-height: 520px;
+  max-height: none;
   overflow-y: auto;
   margin-top: 0;
 }
