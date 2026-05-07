@@ -186,12 +186,13 @@
 /* Michelin app styles */
 
 .app-container {
-  width: 100vw;
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .app-header {
@@ -212,9 +213,12 @@
 }
 
 .map-container {
-  flex: 1;
-  position: relative;
+  flex: 1;            /* 헤더/통계 패널 제외한 나머지 공간 다 차지 */
+  position: relative; /* 설문 카드의 기준점 */
+  width: 100%;       /* 부모 공간 꽉 채우기 */
+  min-height: 0; /* 로딩 전 빈 공간 방지 */
 }
+
 
 .loading {
   padding: 20px 24px;
@@ -316,6 +320,10 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+
+.app-header, .stats-panel {
+  flex-shrink:0;
 }
 
 .stats-stack {
@@ -421,3 +429,74 @@
   color: var(--text-muted);
   font-size: 0.95rem;
 }
+
+.survey-card-overlay {
+  position: absolute; 
+  bottom: 20px;       /* 아래에서 20px */
+  left: 20px;         /* 왼쪽에서 20px */
+  width: 240px;       /* 박스 너비 고정 */
+  
+  /* 레이어 최상단 설정 */
+  z-index: 9999;      /* 지도 마커(보통 400~600)보다 훨씬 높게 설정 */
+  
+  /* 디자인: 검은색 박스 형태 */
+  background: rgba(15, 15, 15, 0.9); /* 불투명한 검은색 배경 */
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  
+  /* 지도 로딩 중에도 클릭 가능하게 */
+  pointer-events: auto; 
+}
+
+.survey-card-overlay select,
+.survey-card-overlay input {
+  width: 100%;
+  box-sizing: border-box; /* 패딩이 너비를 먹지 않게 함 */
+  margin-top: 5px;
+}
+
+.survey-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #E60000; /* 미쉐린 레드 포인트 */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.survey-item {
+  width: 100%;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;  /* 라벨과 셀렉트를 세로로 */
+  align-items: flex-start;
+}
+
+/* 3. 라벨 텍스트가 겹치지 않게 조절 */
+.survey-item label {
+  font-size: 11px;
+  color: #bbb;
+  margin-bottom: 4px;
+  text-align: left;
+}
+/* 별점 버튼 스타일 */
+.mini-star-row { display: flex; gap: 5px; }
+.mini-star-row button {
+  flex: 1;
+  padding: 5px;
+  background: #333;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.mini-star-row button.active { background: #E60000; font-weight: bold; }
+
+/* 체크박스 스타일 */
+.checkbox-row { display: flex; align-items: center; padding-top: 5px; }
+.checkbox-row input { margin-right: 8px; }

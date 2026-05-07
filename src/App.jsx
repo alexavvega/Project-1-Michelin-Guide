@@ -10,11 +10,17 @@ function App() {
   const [cuisineList, setCuisineList] = useState([]);
   const [locationList, setLocationList] = useState([]);
   const [mapCenter, setMapCenter] = useState([25.0330, 121.5654]);
-  const [selectedCuisine, setSelectedCuisine] = useState('All');
+  //const [selectedCuisine, setSelectedCuisine] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [threeStarCount, setThreeStarCount] = useState(0);
   const [filterStar, setFilterStar] = useState('All');
   const [countryTopStarTotals, setCountryTopStarTotals] = useState([]);
+  const [preference, setPreference] = useState({
+  preferredStars: 1,
+  preferredPrice: 4,
+  preferGreenStar: false,
+  cuisine: "All"
+});
 
   const getStarsFromAward = (value) => {
     const match = String(value).match(/\d+/);
@@ -113,14 +119,14 @@ function App() {
         if (!isNaN(lat) && !isNaN(lng)) setMapCenter([lat, lng]);
       }
     }
-    if (selectedCuisine !== 'All' && cKey) {
-      result = result.filter(item => item[cKey] === selectedCuisine);
+    if (preference.cuisine !== 'All' && cKey) {
+      result = result.filter(item => item[cKey] === preference.cuisine);
     }
     if (filterStar !== 'All' && awardKey) {
       result = result.filter(item => getStarsFromAward(item[awardKey]) === Number(filterStar));
     }
     setFilteredData(result);
-  }, [selectedLocation, selectedCuisine, filterStar, data]);
+  }, [selectedLocation, preference.cuisine, filterStar, data]);
 
   const maxCountryStars = countryTopStarTotals[0]?.totalStars || 1;
 
@@ -147,8 +153,8 @@ function App() {
       </select>
 
       <select
-        value={selectedCuisine}
-        onChange={(e) => setSelectedCuisine(e.target.value)}
+        value={preference.cuisine}
+        onChange={(e) => setPreference({...preference, cuisine:e.target.value})}
       >
         <option value="All">All Cuisines</option>
         {cuisineList.map((c) => (
@@ -231,12 +237,68 @@ function App() {
 
 <main className="map-container">
   {data.length > 0 ? (
-    <MapDisplay restaurants={filteredData} center={mapCenter} />
+    <MapDisplay restaurants={filteredData} center={mapCenter} preference={preference}/>
   ) : (
     <div className="loading">
       Loading data... (Please check your CSV file)
     </div>
   )}
+
+  
+  <div className="survey-card-overlay">
+    <h3 className="survey-title">Personal Preference</h3>
+    
+    {/* 1. 음식 종류 선택 */}
+    <div className="survey-item">
+      <label>Favorite Cuisine</label>
+      <select 
+        value={preference.cuisine}
+        onChange={(e) => setPreference({...preference, cuisine: e.target.value})}
+      >
+        <option value="All">All Cuisines</option>
+        {cuisineList.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
+    </div>
+
+    {/* 2. 별점 선택 (1, 2, 3성) */}
+    <div className="survey-item">
+      <label>Minimum Stars</label>
+      <div className="mini-star-row">
+        {[1, 2, 3].map(s => (
+          <button 
+            key={s}
+            className={preference.preferredStars === s ? 'active' : ''}
+            onClick={() => setPreference({...preference, preferredStars: s})}
+          >
+            {s}★
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* 3. 가격대 선택 (Range 슬라이더) */}
+    <div className="survey-item">
+      <label>Max Price: {"$".repeat(preference.preferredPrice)}</label>
+      <input 
+        type="range" min="1" max="4" 
+        value={preference.preferredPrice}
+        onChange={(e) => setPreference({...preference, preferredPrice: parseInt(e.target.value)})}
+      />
+    </div>
+
+    {/* 4. 그린 스타 여부 */}
+    <div className="survey-item checkbox-row">
+      <label>
+        <input 
+          type="checkbox" 
+          checked={preference.preferGreenStar}
+          onChange={(e) => setPreference({...preference, preferGreenStar: e.target.checked})}
+        />
+        ☘️ Green Star Priority
+      </label>
+    </div>
+  </div>
+  
 </main>
 </div>
 );
