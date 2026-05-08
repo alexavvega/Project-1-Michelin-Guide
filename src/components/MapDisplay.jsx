@@ -1,11 +1,13 @@
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import {useRef} from 'react';
+import NearbyList from './NearbyList';
 
 
-const createCustomIcon = (stars, isGreen) => {
+const createCustomIcon = (stars, isGreen, matchRatio =1) => {
     let color = "#3498db"; 
     let scale = 1;
 
@@ -32,6 +34,9 @@ const createCustomIcon = (stars, isGreen) => {
         ? "0 0 10px rgba(46, 125, 50, 0.9), 0 2px 5px rgba(0,0,0,0.4)" 
         : "0 2px 5px rgba(0,0,0,0.4)";
 
+    const sat = 0.5 + (matchRatio*1.0);
+    const bri = 0.7 + (matchRatio*0.6);
+
     return L.divIcon({
         className: 'custom-michelin-pin',
         html: `
@@ -43,6 +48,9 @@ const createCustomIcon = (stars, isGreen) => {
                 transform: rotate(-45deg);
                 border: ${borderStyle};
                 box-shadow: ${boxShadow};
+                opacity: 1.0;
+                transition: filter 0.4s ease;
+                filter: saturate(${sat}) brightness(${bri});
             "></div>`,
         iconSize: [25, 25],
         iconAnchor: [12, 25]
@@ -59,7 +67,28 @@ function ChangeView({ center }) {
     return null;
 }
 
-function MapDisplay({ restaurants, center }) {
+function MapDisplay({ restaurants, center, preference }) {
+    
+const [userLocation, setUserLocation] = useState(null);
+const markerRefs = useRef({});
+
+useEffect(()=> {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setUserLocation({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            },
+            (err) => {
+                console.error("cannot bring position info.", err);
+                setUserLocation({lat: 37.5665, lng: 126.9700});
+            }
+        );
+    }
+}, []);
+
     const getStarDisplay = (item) => {
         const awardKey = Object.keys(item).find(k => k.trim().toLowerCase().includes('award') || k.trim().toLowerCase().includes('star'));
         const rawValue = item[awardKey] ? String(item[awardKey]).toLowerCase() : "";
@@ -126,9 +155,54 @@ function MapDisplay({ restaurants, center }) {
             <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%' }}>
                 <ChangeView center={center} />
                 <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+                <NearbyList 
+                    restaurants={restaurants} 
+                    userLocation={userLocation} 
+                    markerRefs={markerRefs} 
+                />
                 
                 <MarkerClusterGroup chunkedLoading maxClusterRadius={60}>
                     {restaurants.map((res, idx) => {
+                        const resCuisine = res.cuisine || "";
+                        const resStars = parseInt((res.award || "").match(/\d+/) || [0], 10);
+                        const resPriceText = res.price || "";
+                        const resPriceLevel = resPriceText.split('').filter(c=>c==='$').length||1;
+                        const isGreen = res.greenstar === "1";
+                        
+                        let totalCriteria = 0;
+                        let matchCount = 0;
+
+                        if (preference) {
+                            totalCriteria++;
+                            if (preference.cuisine === "ALL" || resCuisine.includes(preference.cuisine)) {
+                                matchCount++;
+                            }
+
+                            totalCriteria++;
+                            if (resStars >= preference.preferredStars){
+                                matchCount++;
+                            }
+
+                            totalCriteria++;
+                            if (resPriceLevel<=preference.preferredPrice){
+                                matchCount++;
+                            }
+
+                            if (preference.preferGreenStar) {
+                                totalCriteria++;
+                                if (isGreen) {
+                                    matchCount++;
+                                }
+                            }
+                        }
+                        
+                        let finalMatchRatio = 0;
+                        if (totalCriteria>0){
+                            finalMatchRatio = matchCount/totalCriteria;
+                        } else {
+                            finalMatchRatio =1;
+                        }
+
                         const keys = Object.keys(res);
                         const findKey = (word) => keys.find(k => k.toLowerCase().includes(word.toLowerCase()));
 
@@ -147,8 +221,10 @@ function MapDisplay({ restaurants, center }) {
                             return (
                                 <Marker 
                                     key={`marker-${idx}`} 
+                                    ref={(el) => (markerRefs.current[idx] = el)}
                                     position={[lat, lng]} 
-                                    icon={createCustomIcon(stars, isGreen)}
+                                    icon={createCustomIcon(stars, isGreen, finalMatchRatio)}
+                                
                                 >
                                     <Tooltip direction="top" offset={[0, -20]} opacity={0.9}>
                                         <div style={{ padding: '4px 8px', textAlign: 'center' }}>
