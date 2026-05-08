@@ -248,7 +248,7 @@ function App() {
   <div className="survey-card-overlay">
     <h3 className="survey-title">Personal Preference</h3>
     
-    {/* 1. 음식 종류 선택 */}
+    
     <div className="survey-item">
       <label>Favorite Cuisine</label>
       <select 
@@ -260,7 +260,7 @@ function App() {
       </select>
     </div>
 
-    {/* 2. 별점 선택 (1, 2, 3성) */}
+    
     <div className="survey-item">
       <label>Minimum Stars</label>
       <div className="mini-star-row">
@@ -276,7 +276,7 @@ function App() {
       </div>
     </div>
 
-    {/* 3. 가격대 선택 (Range 슬라이더) */}
+    
     <div className="survey-item">
       <label>Max Price: {"$".repeat(preference.preferredPrice)}</label>
       <input 

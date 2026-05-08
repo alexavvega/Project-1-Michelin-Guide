@@ -15,13 +15,13 @@ const getDistance = (lat1,lon1,lat2,lon2) => {
 const NearbyList = ({ restaurants, userLocation, markerRefs }) => {
     const map = useMap();
 
-    // 1. 거리 계산 및 정렬 로직 (소문자 대응)
+    
     const nearby = useMemo(() => {
         if (!userLocation || !restaurants.length) return [];
 
         return restaurants
             .map((res, idx) => {
-                // 데이터 키값 유연하게 찾기 (대소문자 방어)
+               
                 const keys = Object.keys(res);
                 const latKey = keys.find(k => k.toLowerCase() === 'latitude');
                 const lngKey = keys.find(k => k.toLowerCase() === 'longitude');
@@ -51,7 +51,7 @@ const NearbyList = ({ restaurants, userLocation, markerRefs }) => {
 
     const handleFlyTo = (res) => {
         map.flyTo([parseFloat(res.latitude), parseFloat(res.longitude)], 15, { duration: 1.5 });
-        // 부모에서 넘겨받은 markerRefs를 통해 팝업 열기
+       
         if (markerRefs.current[res.originalIndex]) {
             markerRefs.current[res.originalIndex].openPopup();
         }
